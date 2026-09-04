@@ -1,0 +1,47 @@
+[
+  {
+    "nombre": "vacaciones",
+    "mensaje": "¿Cuántos días de anticipación necesito para pedir vacaciones?",
+    "categoriaEsperada": "vacaciones"
+  },
+  {
+    "nombre": "accidente",
+    "mensaje": "Me resbalé trabajando desde mi casa y me lesioné el tobillo, ¿qué debo hacer?",
+    "categoriaEsperada": "accidente_laboral"
+  },
+  {
+    "nombre": "ley-karin",
+    "mensaje": "¿Cuáles son los canales para una denuncia por Ley Karin?",
+    "categoriaEsperada": "ley_karin"
+  },
+  {
+    "nombre": "platzi",
+    "mensaje": "No puedo entrar a mi cuenta de Platzi, ¿quién me ayuda?",
+    "categoriaEsperada": "accesos_platzi"
+  },
+  {
+    "nombre": "consulta-general",
+    "mensaje": "¿Dónde reviso mis capacitaciones SENCE?",
+    "categoriaEsperada": "sin_clasificar"
+  },
+  {
+    "nombre": "mayusculas",
+    "mensaje": "NECESITO VACACIONES",
+    "categoriaEsperada": "vacaciones"
+  },
+  {
+    "nombre": "tildes",
+    "mensaje": "Me CAÍ trabajando",
+    "categoriaEsperada": "accidente_laboral"
+  },
+  {
+    "nombre": "vacio",
+    "mensaje": "",
+    "categoriaEsperada": "sin_clasificar"
+  },
+  {
+    "nombre": "temas-mixtos",
+    "mensaje": "Accidente antes de mis vacaciones",
+    "categoriaEsperada": "vacaciones"
+  }
+]
