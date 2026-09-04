@@ -1,0 +1,13 @@
+# Entornos y credenciales locales
+.env
+.env.*
+!.env.example
+.n8n/
+credentials*.json
+node_modules/
+
+# Temporales
+*.log
+~$*
+.DS_Store
+Thumbs.db
