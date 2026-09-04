@@ -1,0 +1,576 @@
+{
+  "name": "ADIPA - Chatbot de consultas - Piloto documentado",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "adipa-chatbot",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "5543c93f-d714-40f6-bcef-ba7c63e5c41c",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        16,
+        480
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.first().json;\nconst body = item.body || {};\nconst query = item.query || {};\nconst mensajeOriginal = body.mensaje || body.text || query.mensaje || '';\n\nfunction normalizar(t) {\n  return t\n    .toLowerCase()\n    .normalize('NFD').replace(/[\\u0300-\\u036f]/g, '');\n}\n\nreturn [{\n  json: {\n    mensajeOriginal,\n    textoNormalizado: normalizar(mensajeOriginal),\n    colaborador: body.colaborador || 'desconocido',\n    timestamp: new Date().toISOString()\n  }\n}];"
+      },
+      "id": "111cfbaf-1836-4097-82e2-392831d43776",
+      "name": "Normaliza texto",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        480
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{$json.textoNormalizado}}",
+              "operation": "regex",
+              "value2": "vacacion|anticipacion"
+            }
+          ]
+        }
+      },
+      "id": "e9bbbb35-54de-4969-9720-d63faa10fadd",
+      "name": "IF vacaciones",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        464,
+        480
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{$json.textoNormalizado}}",
+              "operation": "regex",
+              "value2": "resbal|lesion|accident|golpe|cai\\b"
+            }
+          ]
+        }
+      },
+      "id": "15443824-5b7b-4886-acab-0e9eac29fbe6",
+      "name": "IF accidente",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        464,
+        656
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{$json.textoNormalizado}}",
+              "operation": "regex",
+              "value2": "ley karin|denuncia|acoso"
+            }
+          ]
+        }
+      },
+      "id": "f7594ba1-a3cd-4c23-b9de-48cb5ecfa8b7",
+      "name": "IF ley karin",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        464,
+        848
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{$json.textoNormalizado}}",
+              "operation": "regex",
+              "value2": "acceso|clave|contrasena|no puedo entrar|platzi"
+            }
+          ]
+        }
+      },
+      "id": "ef4a1bff-330a-4703-8e2e-99a57ecefbc4",
+      "name": "IF accesos/Platzi",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        464,
+        1024
+      ]
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "categoria",
+              "value": "vacaciones"
+            },
+            {
+              "name": "respuesta",
+              "value": "Debes solicitar tus vacaciones a través del Formulario de Solicitud de Vacaciones y/o Permisos en Monday, con un mínimo de 30 días de anticipación. Talento y Bienestar validará tu solicitud, luego la aprobará tu jefatura directa, y finalmente Administración y Finanzas confirmará el descuento del saldo. Casos excepcionales al plazo de 30 días se evalúan directamente con tu líder."
+            },
+            {
+              "name": "requiereEscalar",
+              "value": "false"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "bf4e008d-db42-47c3-a0fc-2cf6a1491202",
+      "name": "Set respuesta vacaciones",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [
+        800,
+        416
+      ]
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "categoria",
+              "value": "accidente_laboral"
+            },
+            {
+              "name": "respuesta",
+              "value": "Según el taller de teletrabajo de ADIPA, si las condiciones te lo permiten, avisa de inmediato a tu Jefatura Directa. La jefatura coordina la gestión posterior con prevención/ACHS. Este piloto prepara el escalamiento, pero todavía no envía una notificación real. Esta orientación no reemplaza la atención que necesites."
+            },
+            {
+              "name": "requiereEscalar",
+              "value": "true"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "4bac4253-f380-428a-9705-c432823a3789",
+      "name": "Set respuesta accidente",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [
+        672,
+        608
+      ]
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "categoria",
+              "value": "ley_karin"
+            },
+            {
+              "name": "respuesta",
+              "value": "Puedes consultar los canales o presentar una denuncia por Ley Karin mediante el formulario de ADIPA en Monday (https://forms.monday.com/forms/09bfc8a9f4c39c29c1f7027fb8b133ca?r=use1), el correo thiare@adipa.cl (Thiare Lizana Canales, Talent Manager) o la Dirección del Trabajo. El protocolo contempla la denuncia verbal o escrita. Si la responsable no está disponible o es la persona denunciada, corresponde la suplencia de Katalina Inzunza Becerra (katalina@adipa.cl). La gestión formal es confidencial y corresponde a las personas responsables del procedimiento. Esta consulta informativa no inicia una denuncia."
+            },
+            {
+              "name": "requiereEscalar",
+              "value": "false"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "829e54cb-0fcb-4f5f-86f5-025fe0df4211",
+      "name": "Set respuesta ley karin",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [
+        688,
+        816
+      ]
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "categoria",
+              "value": "accesos_platzi"
+            },
+            {
+              "name": "respuesta",
+              "value": "Las dudas y gestiones sobre el beneficio de Platzi se canalizan a través de Talento y Bienestar. Si no puedes ingresar a tu cuenta, contacta a esa área para que gestione tu consulta. Este piloto entrega orientación y no activa cuentas ni resuelve el acceso automáticamente."
+            },
+            {
+              "name": "requiereEscalar",
+              "value": "false"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "47a883f7-38d2-432c-9473-5828e2a36cd3",
+      "name": "Set respuesta accesos/Platzi",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [
+        768,
+        976
+      ]
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "categoria",
+              "value": "sin_clasificar"
+            },
+            {
+              "name": "respuesta",
+              "value": "No pude identificar una respuesta dentro de los cuatro temas de este piloto. Contacta a Talento y Bienestar para orientar tu consulta. La conexión con IA y búsqueda documental está pendiente; todavía no se ha realizado una derivación automática."
+            },
+            {
+              "name": "requiereEscalar",
+              "value": "true"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "93fc9569-653f-4ebe-9a89-e5618ebcf343",
+      "name": "Set orientación general (IA pendiente)",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [
+        752,
+        1168
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": true,
+              "value2": true
+            }
+          ]
+        }
+      },
+      "id": "55203465-f7f4-48de-8f0d-aaaeba88078a",
+      "name": "IF escalar (accidente, siempre sí)",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        896,
+        608
+      ]
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "destinatarioPrevisto",
+              "value": "jefatura_directa"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "f152d212-b987-442f-ad21-74e525cd327e",
+      "name": "Preparar aviso a Jefatura Directa (simulado)",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [
+        1168,
+        528
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "chooseBranch"
+      },
+      "id": "4b251c64-3833-49d8-9f1b-609913d758db",
+      "name": "Merge (une todas las ramas)",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 2.1,
+      "position": [
+        1328,
+        880
+      ]
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "ticketId",
+              "value": "={{$json.timestamp}}-{{$json.categoria}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "ca445a68-9384-4784-b16c-c29c79c926df",
+      "name": "Preparar ticket (registro simulado)",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [
+        1584,
+        784
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \"categoria\": $json.categoria, \"respuesta\": $json.respuesta, \"ticketId\": $json.ticketId } }}",
+        "options": {}
+      },
+      "id": "071a5192-a753-4f2f-bef6-aeec319d88eb",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1792,
+        784
+      ]
+    },
+    {
+      "parameters": {
+        "content": "-¿Cuántos días de anticipación necesito para pedir vacaciones?\n\n-Me resbalé trabajando desde mi casa y me lesioné el tobillo, ¿qué debo hacer?\n\n-¿Cuáles son los canales para una denuncia por Ley Karin?\n\n-No puedo entrar a mi cuenta de Platzi, ¿quién me ayuda?",
+        "height": 256,
+        "width": 304
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -112,
+        704
+      ],
+      "typeVersion": 1,
+      "id": "18ee76f1-955b-4d8f-9586-720ba17db8e5",
+      "name": "Sticky Note"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Normaliza texto",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normaliza texto": {
+      "main": [
+        [
+          {
+            "node": "IF vacaciones",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF vacaciones": {
+      "main": [
+        [
+          {
+            "node": "Set respuesta vacaciones",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "IF accidente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF accidente": {
+      "main": [
+        [
+          {
+            "node": "Set respuesta accidente",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "IF ley karin",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF ley karin": {
+      "main": [
+        [
+          {
+            "node": "Set respuesta ley karin",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "IF accesos/Platzi",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF accesos/Platzi": {
+      "main": [
+        [
+          {
+            "node": "Set respuesta accesos/Platzi",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set orientación general (IA pendiente)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set respuesta vacaciones": {
+      "main": [
+        [
+          {
+            "node": "Merge (une todas las ramas)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set respuesta accidente": {
+      "main": [
+        [
+          {
+            "node": "IF escalar (accidente, siempre sí)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF escalar (accidente, siempre sí)": {
+      "main": [
+        [
+          {
+            "node": "Preparar aviso a Jefatura Directa (simulado)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Merge (une todas las ramas)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar aviso a Jefatura Directa (simulado)": {
+      "main": [
+        [
+          {
+            "node": "Merge (une todas las ramas)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set respuesta ley karin": {
+      "main": [
+        [
+          {
+            "node": "Merge (une todas las ramas)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set respuesta accesos/Platzi": {
+      "main": [
+        [
+          {
+            "node": "Merge (une todas las ramas)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set orientación general (IA pendiente)": {
+      "main": [
+        [
+          {
+            "node": "Merge (une todas las ramas)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge (une todas las ramas)": {
+      "main": [
+        [
+          {
+            "node": "Preparar ticket (registro simulado)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar ticket (registro simulado)": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": []
+}
